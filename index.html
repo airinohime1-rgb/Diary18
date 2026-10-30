@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f1ece1">
+  <meta name="description" content="A little home for your books, chapters, and thoughts.">
+  <title>Baby Tomato's Diary</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./tomato-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Handlee&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --app-bg: #f1ece1;
+      --paper: #fffefa;
+      --paper-2: #f8f5ec;
+      --ink: #3f493f;
+      --muted: #81877b;
+      --accent: #697b61;
+      --accent-soft: #e2e8db;
+      --line: #e8e3d7;
+      --shadow: 0 18px 50px rgba(68, 58, 42, .10);
+      --font: 'Handlee', 'Comic Sans MS', cursive;
+      --danger: #b54a4a;
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--app-bg); color: var(--ink); font-family: var(--font);
+      font-size: 16px; line-height: 1.45; letter-spacing: .01em;
+      background-image: radial-gradient(rgba(122, 109, 83, .08) .7px, transparent .7px);
+      background-size: 9px 9px;
+    }
+    button, input, textarea, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, [contenteditable="true"]:focus-visible {
+      outline: 2px solid var(--accent); outline-offset: 3px;
+    }
+    .app-header {
+      min-height: 76px; display: flex; align-items: center; justify-content: space-between;
+      padding: 12px clamp(16px, 3vw, 42px); border-bottom: 1px solid rgba(126, 119, 100, .16);
+      background: rgba(255, 254, 250, .72); backdrop-filter: blur(14px); position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 15px; background: #f5d9d2; font-size: 24px; box-shadow: inset 0 -3px 0 rgba(120, 59, 47, .08); }
+    .brand-name { font-size: 21px; font-weight: 700; line-height: 1.1; }
+    .brand-caption { color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .soft-button, .icon-button, .primary-button, .quiet-button {
+      border: 1px solid var(--line); background: var(--paper); border-radius: 13px; padding: 9px 13px;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+    .soft-button:hover, .icon-button:hover, .quiet-button:hover { background: var(--paper-2); transform: translateY(-1px); }
+    .primary-button { background: var(--accent); border-color: var(--accent); color: #fff; padding: 11px 17px; box-shadow: 0 6px 15px rgba(65, 88, 59, .16); }
+    .primary-button:hover { filter: brightness(1.04); transform: translateY(-1px); }
+    .primary-button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .quiet-button { background: transparent; }
+    .icon-button { width: 38px; height: 38px; padding: 0; display: inline-grid; place-items: center; font-size: 18px; }
+    .app-shell { max-width: 1500px; margin: 0 auto; padding: 26px clamp(12px, 2.5vw, 34px) 40px; display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 22px; min-height: calc(100vh - 76px); }
+    .sidebar, .main-panel { background: rgba(255, 254, 250, .82); border: 1px solid rgba(220, 214, 201, .85); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .sidebar { padding: 19px 15px; display: flex; flex-direction: column; min-height: 650px; }
+    .side-top { padding: 2px 5px 17px; border-bottom: 1px solid var(--line); }
+    .side-kicker, .eyebrow { font-size: 11px; color: var(--muted); letter-spacing: .13em; text-transform: uppercase; }
+    .side-heading { font-size: 23px; margin: 4px 0 12px; }
+    .new-book { width: 100%; }
+    .search-wrap { margin: 16px 3px 12px; position: relative; }
+    .search-wrap span { position: absolute; left: 12px; top: 8px; color: var(--muted); }
+    .search-input { width: 100%; border: 1px solid var(--line); border-radius: 13px; background: var(--paper-2); padding: 9px 12px 9px 34px; outline: none; }
+    .search-input:focus { border-color: var(--accent); background: var(--paper); }
+    .nav-label { padding: 8px 9px 5px; color: var(--muted); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    .filter-button { display: flex; justify-content: space-between; align-items: center; width: 100%; border: 0; border-radius: 12px; background: transparent; padding: 9px 10px; text-align: left; }
+    .filter-button:hover { background: var(--paper-2); }
+    .filter-button.active { background: var(--accent-soft); color: var(--accent); }
+    .filter-count { color: var(--muted); font-size: 12px; }
+    .library-head { display: flex; align-items: center; justify-content: space-between; padding: 17px 8px 8px; }
+    .library-head strong { font-size: 13px; letter-spacing: .06em; }
+    .library-tools { display: flex; gap: 4px; }
+    .mini-tool { border: 0; background: transparent; color: var(--muted); border-radius: 8px; padding: 4px 6px; }
+    .mini-tool:hover { background: var(--paper-2); color: var(--ink); }
+    .book-list { display: grid; gap: 6px; overflow: auto; max-height: 430px; padding: 2px 2px 10px; }
+    .book-list.shelf-view { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .book-list.shelf-view .book-row { min-width: 0; flex-direction: column; align-items: stretch; gap: 7px; padding: 7px; }
+    .book-list.shelf-view .book-thumb { width: 100%; height: 91px; font-size: 27px; border-radius: 7px 10px 10px 7px; }
+    .book-list.shelf-view .book-row-copy { width: 100%; }
+    .book-list.shelf-view .book-row-title, .book-list.shelf-view .book-row-sub { display: block; text-align: center; }
+    .book-list.shelf-view .book-row-heart { position: absolute; }
+    .book-row { display: flex; align-items: center; gap: 10px; border: 1px solid transparent; border-radius: 13px; background: transparent; padding: 8px; min-width: 0; text-align: left; }
+    .book-row:hover { background: var(--paper-2); }
+    .book-row.active { background: var(--accent-soft); border-color: rgba(105, 123, 97, .17); }
+    .book-thumb { width: 35px; height: 46px; border-radius: 5px 8px 8px 5px; flex: 0 0 auto; display: grid; place-items: center; font-size: 19px; color: var(--cover-ink, #fff); box-shadow: inset 3px 0 rgba(255,255,255,.25), 2px 3px 5px rgba(0,0,0,.12); background: var(--cover, #d99ca4); }
+    .book-row-copy { min-width: 0; flex: 1; }
+    .book-row-title { font-size: 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .book-row-sub { font-size: 11px; color: var(--muted); }
+    .book-row-heart { color: #bd6f82; font-size: 13px; }
+    .side-foot { margin-top: auto; padding: 14px 8px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; gap: 10px; }
+    .save-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #8ea57f; margin-right: 6px; }
+    .main-panel { padding: clamp(16px, 2.5vw, 32px); min-width: 0; overflow: hidden; }
+    .welcome { min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 35px 16px; }
+    .welcome-art { width: 112px; height: 112px; background: #f5e2d7; border-radius: 38% 62% 51% 49% / 45% 47% 53% 55%; display: grid; place-items: center; font-size: 55px; transform: rotate(-6deg); margin-bottom: 22px; }
+    .welcome h1 { font-size: clamp(32px, 4vw, 47px); line-height: 1.14; margin: 0 0 10px; font-weight: 700; }
+    .welcome p { color: var(--muted); font-size: 17px; max-width: 440px; margin: 0 auto 22px; }
+    .welcome-note { margin-top: 30px; color: var(--muted); font-size: 13px; }
+    .workspace { display: grid; grid-template-columns: 245px minmax(0, 1fr); gap: 24px; align-items: start; }
+    .book-panel { min-width: 0; }
+    .back-link { border: 0; background: transparent; color: var(--muted); padding: 2px 0 12px; }
+    .back-link:hover { color: var(--accent); }
+    .large-cover { min-height: 220px; border-radius: 13px 20px 20px 13px; padding: 24px 20px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; color: var(--cover-ink, #fff); background: var(--cover, #d99ca4); box-shadow: inset 7px 0 rgba(0,0,0,.08), inset 10px 0 rgba(255,255,255,.13), 0 13px 24px rgba(0,0,0,.13); }
+    .large-cover:before { content: '✿'; position: absolute; top: -34px; right: -7px; font-size: 150px; opacity: .14; transform: rotate(18deg); }
+    .large-cover:after { content: ''; position: absolute; inset: 12px; border: 1px solid rgba(255,255,255,.25); border-radius: 8px 14px 14px 8px; pointer-events: none; }
+    .large-cover h2 { position: relative; margin: 0; font-size: 26px; line-height: 1.17; overflow-wrap: anywhere; text-shadow: 0 1px 2px rgba(0,0,0,.1); }
+    .large-cover .cover-symbol { position: absolute; top: 18px; left: 20px; font-size: 27px; opacity: .8; }
+    .book-description { color: var(--muted); font-size: 14px; margin: 12px 2px 16px; white-space: pre-wrap; }
+    .book-actions { display: flex; gap: 7px; flex-wrap: wrap; padding-bottom: 19px; border-bottom: 1px solid var(--line); }
+    .book-actions button { font-size: 12px; padding: 7px 9px; }
+    .chapter-heading { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px; }
+    .chapter-heading h3 { font-size: 13px; letter-spacing: .08em; margin: 0; }
+    .chapter-add { border: 1px solid var(--line); background: var(--paper); border-radius: 10px; width: 30px; height: 30px; font-size: 20px; line-height: 1; }
+    .chapter-list { display: grid; gap: 4px; max-height: 300px; overflow: auto; }
+    .chapter-row { width: 100%; display: flex; gap: 8px; align-items: center; padding: 9px 8px; border: 1px solid transparent; border-radius: 10px; background: transparent; text-align: left; }
+    .chapter-row:hover { background: var(--paper-2); }
+    .chapter-row.active { background: var(--accent-soft); border-color: rgba(105,123,97,.16); }
+    .chapter-num { font-size: 12px; color: var(--muted); min-width: 21px; }
+    .chapter-name { font-size: 14px; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .chapter-count { font-size: 11px; color: var(--muted); }
+    .chapter-empty { border: 1px dashed var(--line); border-radius: 12px; padding: 17px 12px; text-align: center; color: var(--muted); font-size: 13px; }
+    .chapter-row-fav { color: #bd6f82; font-size: 11px; }
+    .editor-panel { min-width: 0; }
+    .editor-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 1px 2px 13px; border-bottom: 1px solid var(--line); }
+    .editor-crumb { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .editor-crumb span { padding: 0 6px; opacity: .6; }
+    .editor-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+    .format-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .format-button { min-width: 31px; height: 31px; border: 1px solid transparent; border-radius: 8px; background: transparent; padding: 4px 8px; }
+    .format-button:hover, .format-button.selected { background: var(--accent-soft); border-color: rgba(105,123,97,.14); }
+    .tool-sep { height: 20px; width: 1px; background: var(--line); margin: 0 4px; }
+    .ink-dot { width: 17px; height: 17px; border-radius: 50%; border: 2px solid var(--paper); outline: 1px solid var(--line); padding: 0; }
+    .ink-dot.active { outline: 2px solid var(--accent); }
+    .ink-auto { background: var(--ink); }
+    .custom-ink { width: 28px; height: 28px; border: 0; padding: 0; background: transparent; }
+    .paper-wrap { padding: 17px 0 0; }
+    .paper {
+      min-height: 570px; border: 1px solid #ede6d8; border-radius: 7px 15px 15px 7px; background-color: var(--paper);
+      box-shadow: 0 12px 30px rgba(75, 63, 41, .08), inset 8px 0 12px rgba(138, 117, 83, .035);
+      padding: clamp(20px, 4vw, 42px) clamp(18px, 4vw, 48px); position: relative;
+      background-image: linear-gradient(90deg, transparent 0 36px, rgba(211, 141, 141, .18) 37px, transparent 38px), repeating-linear-gradient(to bottom, transparent 0 31px, rgba(142, 165, 182, .16) 32px, transparent 33px);
+    }
+    .paper-kicker { font-size: 11px; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; margin: 0 0 9px 20px; }
+    .chapter-title-input { display: block; width: 100%; border: 0; outline: 0; background: transparent; font-size: clamp(23px, 3vw, 32px); color: var(--ink); font-weight: 700; padding: 0 0 8px 20px; }
+    .chapter-title-input::placeholder { color: #b9b5a8; }
+    .paper-rule { border: 0; border-top: 1px solid var(--line); margin: 3px 0 9px 20px; }
+    .chapter-meta { display: flex; justify-content: flex-end; padding-right: 2px; margin-bottom: 12px; }
+    .chapter-date { border: 0; background: transparent; color: var(--muted); font-size: 12px; }
+    .rich-body { min-height: 390px; padding: 2px 1px 15px 20px; outline: none; line-height: 2.05; font-size: 17px; overflow-wrap: anywhere; }
+    .rich-body:empty:before { content: attr(data-placeholder); color: #aaa99e; pointer-events: none; }
+    .rich-body p { margin: 0 0 10px; }
+    .rich-body h2, .rich-body h3 { line-height: 1.4; }
+    .rich-body img { max-width: 100%; height: auto; max-height: 420px; border-radius: 8px; display: block; margin: 12px 0; }
+    .editor-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding: 10px 0 0 20px; color: var(--muted); font-size: 12px; }
+    .empty-editor { min-height: 470px; display: grid; place-items: center; text-align: center; padding: 30px; border: 1px dashed var(--line); border-radius: 15px; color: var(--muted); }
+    .empty-editor strong { display: block; color: var(--ink); font-size: 22px; margin-bottom: 5px; }
+    .page-status { min-height: 18px; }
+    .hidden { display: none !important; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 15px); opacity: 0; pointer-events: none; background: #333d34; color: #fff; border-radius: 12px; padding: 10px 17px; z-index: 50; box-shadow: var(--shadow); transition: .2s ease; font-size: 14px; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    dialog { border: 1px solid var(--line); border-radius: 20px; background: var(--paper); color: var(--ink); padding: 0; width: min(470px, calc(100vw - 28px)); box-shadow: 0 26px 90px rgba(25, 27, 22, .25); font-family: var(--font); }
+    dialog::backdrop { background: rgba(32, 38, 31, .48); backdrop-filter: blur(4px); }
+    .dialog-inner { padding: 23px; }
+    .dialog-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 17px; }
+    .dialog-head h2 { font-size: 25px; margin: 0; }
+    .field-label { display: block; font-size: 13px; margin: 12px 0 5px; color: var(--muted); }
+    .text-field, .text-area { width: 100%; border: 1px solid var(--line); border-radius: 11px; background: var(--paper-2); padding: 10px 12px; outline: none; }
+    .text-field:focus, .text-area:focus { border-color: var(--accent); background: var(--paper); }
+    .text-area { min-height: 75px; resize: vertical; }
+    .cover-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 8px; }
+    .cover-choice { height: 46px; border: 2px solid transparent; border-radius: 9px; font-size: 20px; color: white; box-shadow: inset 3px 0 rgba(255,255,255,.2); }
+    .cover-choice.chosen { border-color: var(--ink); outline: 2px solid var(--paper); }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .theme-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .theme-choice { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); padding: 10px; display: flex; align-items: center; gap: 9px; text-align: left; }
+    .theme-choice.chosen { border-color: var(--accent); background: var(--accent-soft); }
+    .theme-swatches { display: flex; gap: 3px; }
+    .theme-swatches i { display: block; width: 13px; height: 22px; border-radius: 5px; }
+    .dialog-note { color: var(--muted); font-size: 12px; margin-top: 11px; }
+
+    /* Storybook reader */
+    #flipDialog { width: min(1120px, calc(100vw - 22px)); height: min(820px, calc(100dvh - 24px)); max-width: none; overflow: hidden; background: #eae3d5; border-color: rgba(92, 79, 57, .2); }
+    .flip-shell { height: 100%; display: flex; flex-direction: column; padding: 14px clamp(12px, 2.5vw, 27px) 16px; }
+    .flip-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #625c4f; }
+    .flip-book-title { font-size: 19px; }
+    .flip-pages { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 15px 0; perspective: 1800px; }
+    .book-spread { width: min(940px, 100%); height: min(620px, 100%); display: grid; grid-template-columns: 1fr 1fr; filter: drop-shadow(0 18px 22px rgba(58, 47, 31, .18)); position: relative; }
+    .reader-page { min-width: 0; overflow: hidden; background-color: #fffdf5; color: #45463e; padding: clamp(22px, 4vw, 48px); position: relative; line-height: 1.85; font-size: clamp(14px, 1.65vw, 18px); background-image: repeating-linear-gradient(to bottom, transparent 0 31px, rgba(153, 172, 181, .13) 32px, transparent 33px); }
+    .reader-page.left { border-radius: 7px 0 0 7px; box-shadow: inset -13px 0 18px -18px rgba(42, 32, 18, .55); }
+    .reader-page.right { border-radius: 0 7px 7px 0; box-shadow: inset 13px 0 18px -18px rgba(42, 32, 18, .55); }
+    .reader-page.left:after { content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 1px; background: rgba(143, 125, 93, .25); }
+    .reader-page p { margin: 0 0 13px; }
+    .reader-page img { max-width: 100%; max-height: 340px; object-fit: contain; }
+    .reader-page h2, .reader-page h3 { line-height: 1.4; }
+    .reader-page-number { position: absolute; bottom: 15px; color: #aaa18f; font-size: 12px; left: 0; right: 0; text-align: center; }
+    .reader-cover { display: flex; align-items: center; justify-content: center; text-align: center; flex-direction: column; background: linear-gradient(140deg, #f3e1da, #fff8ed); }
+    .reader-cover .tomato { font-size: 42px; }
+    .reader-cover h2 { font-size: clamp(27px, 4vw, 43px); margin: 15px 0 5px; line-height: 1.15; }
+    .reader-cover p { color: #918878; }
+    .flip-bottom { display: flex; align-items: center; justify-content: center; gap: 14px; color: #625c4f; }
+    .flip-nav { border: 1px solid rgba(99, 87, 65, .22); border-radius: 50%; width: 42px; height: 42px; background: rgba(255,255,255,.55); font-size: 20px; }
+    .flip-nav:hover:not(:disabled) { background: white; }
+    .flip-nav:disabled { opacity: .35; cursor: not-allowed; }
+    .flip-counter { min-width: 105px; text-align: center; font-size: 13px; }
+    .turning { animation: pageTurn .48s ease; }
+    @keyframes pageTurn { from { transform: rotateY(0); opacity: .7; } to { transform: rotateY(-9deg); opacity: 1; } }
+    .mobile-editor-back { display: none; }
+    @media (max-width: 1000px) {
+      .app-shell { grid-template-columns: 235px minmax(0,1fr); gap: 14px; }
+      .workspace { grid-template-columns: 215px minmax(0,1fr); gap: 16px; }
+      .paper { min-height: 520px; }
+    }
+    @media (max-width: 760px) {
+      .app-header { min-height: 64px; padding: 9px 13px; }
+      .brand-mark { width: 37px; height: 37px; }
+      .brand-name { font-size: 18px; }
+      .brand-caption { display: none; }
+      .header-actions .header-label { display: none; }
+      .header-actions .soft-button { width: 38px; height: 38px; padding: 0; display: grid; place-items: center; }
+      .app-shell { display: flex; flex-direction: column; padding: 12px 10px 25px; min-height: calc(100vh - 64px); }
+      .sidebar { min-height: auto; padding: 12px; }
+      .side-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 11px; }
+      .side-heading { font-size: 20px; margin: 0; }
+      .side-kicker { display: none; }
+      .new-book { width: auto; white-space: nowrap; padding: 8px 11px; }
+      .search-wrap { margin: 10px 1px; }
+      .nav-label, .library-head, .side-foot { display: none; }
+      .filter-row { display: flex; gap: 6px; }
+      .filter-button { width: auto; flex: 1; padding: 7px 9px; justify-content: center; gap: 8px; font-size: 13px; }
+      .book-list { display: flex; overflow-x: auto; max-height: none; padding: 8px 0 2px; }
+      .book-list.shelf-view .book-row { width: 112px; flex: 0 0 112px; align-items: stretch; }
+      .book-list.shelf-view .book-thumb { width: 100%; height: 82px; }
+      .book-row { width: 175px; flex: 0 0 175px; padding: 6px; }
+      .book-thumb { width: 30px; height: 39px; }
+      .main-panel { padding: 15px 12px; }
+      .welcome { min-height: 430px; }
+      .workspace { display: block; }
+      .book-panel { margin-bottom: 18px; }
+      .workspace.mobile-writing .book-panel { display: none; }
+      .workspace.mobile-writing .mobile-editor-back { display: inline-flex; }
+      .large-cover { min-height: 135px; padding: 17px; }
+      .large-cover h2 { font-size: 22px; }
+      .large-cover:before { font-size: 110px; }
+      .book-description { margin-bottom: 9px; }
+      .book-actions { padding-bottom: 11px; }
+      .chapter-list { display: flex; overflow-x: auto; max-height: none; padding-bottom: 5px; }
+      .chapter-row { width: 180px; flex: 0 0 180px; }
+      .chapter-empty { min-width: 100%; }
+      .editor-top { flex-wrap: wrap; }
+      .paper { min-height: 520px; padding: 24px 15px; background-image: linear-gradient(90deg, transparent 0 20px, rgba(211,141,141,.18) 21px, transparent 22px), repeating-linear-gradient(to bottom, transparent 0 30px, rgba(142,165,182,.16) 31px, transparent 32px); }
+      .paper-kicker, .chapter-title-input, .paper-rule, .rich-body, .editor-footer { margin-left: 0; padding-left: 13px; }
+      .rich-body { min-height: 350px; font-size: 16px; }
+      #flipDialog { height: min(740px, calc(100dvh - 16px)); width: calc(100vw - 12px); }
+      .flip-shell { padding: 10px 8px 12px; }
+      .book-spread { grid-template-columns: 1fr; width: min(480px, 100%); height: 100%; max-height: 640px; }
+      .reader-page.left { display: none; }
+      .reader-page.right { border-radius: 7px; box-shadow: inset 0 0 0 1px rgba(143,125,93,.12); }
+      .reader-page { padding: 25px 22px; font-size: 16px; }
+      .flip-book-title { font-size: 16px; }
+    }
+    @media (max-width: 390px) {
+      .brand-name { font-size: 16px; }
+      .header-actions { gap: 4px; }
+      .app-shell { padding-left: 7px; padding-right: 7px; }
+      .main-panel { padding: 12px 9px; }
+      .format-bar { gap: 2px; }
+      .format-button { min-width: 28px; padding: 3px 6px; }
+    }
+
+    /* Theme palettes */
+    [data-theme="light"] { --app-bg:#dde4ee; --paper:#fcfdff; --paper-2:#f0f3f9; --ink:#263653; --muted:#78839b; --accent:#2b4ea2; --accent-soft:#e0e8fa; --line:#d9e0ed; }
+    [data-theme="dark"] { color-scheme:dark; --app-bg:#10152a; --paper:#1f2842; --paper-2:#192139; --ink:#edf0fb; --muted:#a2acc4; --accent:#93b4ff; --accent-soft:#303d60; --line:#37415c; --shadow:0 18px 50px rgba(0,0,0,.25); }
+    [data-theme="black"] { color-scheme:dark; --app-bg:#000; --paper:#14141c; --paper-2:#1c1b26; --ink:#f2effa; --muted:#a6a0b6; --accent:#b794ff; --accent-soft:#31283f; --line:#34303f; --shadow:0 18px 50px rgba(0,0,0,.4); }
+    [data-theme="sepia"] { --app-bg:#e7dcc6; --paper:#fbf5e6; --paper-2:#f3ead8; --ink:#54402b; --muted:#9a8061; --accent:#8a5a2b; --accent-soft:#eee0c9; --line:#e5d8c2; }
+    [data-theme="rose"] { --app-bg:#f5dfe6; --paper:#fffafc; --paper-2:#fbedf2; --ink:#623d4d; --muted:#a57f90; --accent:#c2386f; --accent-soft:#f8e4ec; --line:#efd7e1; }
+    [data-theme="forest"] { --app-bg:#d6e2d4; --paper:#fbfdf9; --paper-2:#edf4eb; --ink:#294735; --muted:#7e9684; --accent:#2f6b45; --accent-soft:#e2eee2; --line:#d8e5d8; }
+    [data-theme="ocean"] { --app-bg:#cfe6ee; --paper:#fafeff; --paper-2:#edf7fa; --ink:#245160; --muted:#7196a1; --accent:#0e7490; --accent-soft:#d9f0f5; --line:#d4e8ed; }
+    [data-theme="lavender"] { --app-bg:#e4def2; --paper:#fdfcff; --paper-2:#f3effb; --ink:#51416c; --muted:#9889b2; --accent:#6d4bc4; --accent-soft:#eee8fb; --line:#e4dcf2; }
+    [data-theme="sunset"] { --app-bg:#f6dcc8; --paper:#fffaf5; --paper-2:#fbefe6; --ink:#70432f; --muted:#b1846d; --accent:#d2541f; --accent-soft:#fbe8dc; --line:#f0d9c9; }
+    [data-theme="tomato"] { color-scheme:light; }
+    [data-theme="auto"] { color-scheme: light dark; }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="auto"] { --app-bg:#10152a; --paper:#1f2842; --paper-2:#192139; --ink:#edf0fb; --muted:#a2acc4; --accent:#93b4ff; --accent-soft:#303d60; --line:#37415c; }
+    }
+    [data-theme="dark"] .paper, [data-theme="black"] .paper { background-image: linear-gradient(90deg, transparent 0 36px, rgba(211,141,141,.13) 37px, transparent 38px), repeating-linear-gradient(to bottom, transparent 0 31px, rgba(142,165,182,.10) 32px, transparent 33px); }
+    [data-theme="dark"] .large-cover, [data-theme="black"] .large-cover { color: var(--cover-ink, #fff); }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">🍅</div>
+      <div><div class="brand-name">Baby Tomato's Diary</div><div class="brand-caption">a little place for all your stories</div></div>
+    </div>
+    <div class="header-actions">
+      <button class="soft-button" id="themeButton" type="button" title="Change theme">☼ <span class="header-label">Theme</span></button>
+      <button class="soft-button" id="exportButton" type="button" title="Export a backup">⇩ <span class="header-label">Backup</span></button>
+      <button class="soft-button hidden" id="installButton" type="button" title="Install app">＋ <span class="header-label">Install</span></button>
+      <button class="icon-button" id="importButton" type="button" title="Import backup" aria-label="Import backup">↥</button>
+    </div>
+  </header>
+
+  <div class="app-shell" id="appShell">
+    <aside class="sidebar" aria-label="Your diary library">
+      <div class="side-top">
+        <div><div class="side-kicker">YOUR LITTLE LIBRARY</div><div class="side-heading">My books</div></div>
+        <button class="primary-button new-book" id="newBookButton" type="button">＋ New book</button>
+      </div>
+      <div class="search-wrap"><span>⌕</span><input id="searchInput" class="search-input" type="search" placeholder="Find a book or a thought…" aria-label="Search books and chapters"></div>
+      <div class="filter-row">
+        <button class="filter-button active" data-filter="all" type="button"><span>All books</span><span class="filter-count" id="allCount">0</span></button>
+        <button class="filter-button" data-filter="favorites" type="button"><span>♡ Favourites</span><span class="filter-count" id="favoriteCount">0</span></button>
+      </div>
+      <div class="library-head"><strong id="libraryCount">YOUR BOOKS</strong><div class="library-tools"><button class="mini-tool" id="sortButton" type="button" title="Change sorting">Recent ↕</button><button class="mini-tool" id="viewButton" type="button" title="Toggle bookshelf view">▦</button></div></div>
+      <div class="book-list" id="bookList" aria-live="polite"></div>
+      <div class="side-foot"><span><i class="save-dot"></i><span id="saveStatus">Saved on this device</span></span><span id="wordTotal">0 words</span></div>
+    </aside>
+
+    <main class="main-panel" id="mainPanel">
+      <section class="welcome" id="welcomeScreen">
+        <div class="welcome-art" aria-hidden="true">📔</div>
+        <div class="eyebrow">A FRESH LITTLE PAGE</div>
+        <h1>Your stories live here.</h1>
+        <p>Make a book, collect your chapters, and let every little thought have a place of its own.</p>
+        <button class="primary-button" id="welcomeNewBook" type="button">＋ Create your first book</button>
+        <div class="welcome-note">✿ Your writing is saved privately on this device.</div>
+      </section>
+      <section class="workspace hidden" id="workspace" aria-label="Book workspace">
+        <aside class="book-panel" id="bookPanel"></aside>
+        <section class="editor-panel" id="editorPanel"></section>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="projectDialog">
+    <form class="dialog-inner" id="projectForm" method="dialog">
+      <div class="dialog-head"><h2 id="projectDialogTitle">A new book</h2><button class="icon-button" type="button" data-close="projectDialog" aria-label="Close">×</button></div>
+      <label class="field-label" for="projectTitle">Book title</label><input class="text-field" id="projectTitle" maxlength="90" placeholder="The little things…" required>
+      <label class="field-label" for="projectDescription">A little note (optional)</label><textarea class="text-area" id="projectDescription" maxlength="500" placeholder="What is this book about?"></textarea>
+      <div class="field-label">Choose a cover</div><div class="cover-grid" id="coverGrid"></div>
+      <div class="dialog-actions"><button class="quiet-button" type="button" data-close="projectDialog">Cancel</button><button class="primary-button" type="submit">Save book</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="themeDialog">
+    <div class="dialog-inner"><div class="dialog-head"><h2>Pick your mood</h2><button class="icon-button" type="button" data-close="themeDialog" aria-label="Close">×</button></div><div class="theme-grid" id="themeGrid"></div><div class="dialog-note">The page colours change; your writing stays the same.</div></div>
+  </dialog>
+
+  <dialog id="confirmDialog">
+    <div class="dialog-inner"><div class="dialog-head"><h2 id="confirmTitle">Are you sure?</h2><button class="icon-button" type="button" data-close="confirmDialog" aria-label="Close">×</button></div><p id="confirmMessage">This cannot be undone.</p><div class="dialog-actions"><button class="quiet-button" type="button" data-close="confirmDialog">Keep it</button><button class="primary-button" type="button" id="confirmYes">Yes, delete</button></div></div>
+  </dialog>
+
+  <dialog id="flipDialog">
+    <div class="flip-shell">
+      <div class="flip-top"><span class="flip-book-title" id="flipTitle">Reading your book</span><button class="icon-button" type="button" data-close="flipDialog" aria-label="Close reader">×</button></div>
+      <div class="flip-pages"><div class="book-spread" id="bookSpread"><article class="reader-page left" id="readerLeft"></article><article class="reader-page right" id="readerRight"></article></div></div>
+      <div class="flip-bottom"><button class="flip-nav" id="readerPrev" type="button" aria-label="Previous pages">‹</button><span class="flip-counter" id="readerCounter">Pages 1–2</span><button class="flip-nav" id="readerNext" type="button" aria-label="Next pages">›</button></div>
+    </div>
+  </dialog>
+
+  <input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+  <input id="backupInput" type="file" accept="application/json,.json" hidden>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+  (() => {
+    'use strict';
+    const STORAGE_KEY = 'baby-tomatos-diary-v1';
+    const PREF_KEY = 'baby-tomatos-diary-prefs-v1';
+    const LEGACY_KEY = 'storypad.v1';
+    const COVERS = {
+      rose:['✿','#d99ca4',1], lavender:['✧','#b8a7d2',1], sage:['❀','#94a58e',1], butter:['☼','#d8bf7d',1], sky:['✦','#8fb7c4',1], berry:['♡','#ad819e',1],
+      indigo:['✦','#2f4a8a',0], moss:['❀','#4a6b45',0], plum:['♡','#6b3f68',0], rust:['☼','#9a4a2f',0], teal:['✧','#2a6b73',0], crimson:['✿','#9b2f45',0]
+    };
+    const THEMES = [
+      {id:'tomato',name:'Tomato',colors:['#f1ece1','#fffefa','#626f60']},{id:'auto',name:'Auto',colors:['#f1ece1','#10152a','#93b4ff']},
+      {id:'light',name:'Notebook',colors:['#dde4ee','#fcfdff','#2b4ea2']},{id:'dark',name:'Midnight',colors:['#10152a','#1f2842','#93b4ff']},
+      {id:'black',name:'Black',colors:['#000000','#14141c','#b794ff']},{id:'sepia',name:'Sepia',colors:['#e7dcc6','#fbf5e6','#8a5a2b']},
+      {id:'rose',name:'Rose',colors:['#f5dfe6','#fffafc','#c2386f']},{id:'forest',name:'Forest',colors:['#d6e2d4','#fbfdf9','#2f6b45']},
+      {id:'ocean',name:'Ocean',colors:['#cfe6ee','#fafeff','#0e7490']},{id:'lavender',name:'Lavender',colors:['#e4def2','#fdfcff','#6d4bc4']},
+      {id:'sunset',name:'Sunset',colors:['#f6dcc8','#fffaf5','#d2541f']}
+    ];
+    const INKS = [['Blue','#1d4ed8'],['Purple','#7e22ce'],['Pink','#ec4899'],['Red','#dc2626'],['Orange','#f97316'],['Yellow','#c28a00'],['Green','#16a34a'],['Teal','#0d9488'],['Cyan','#06b6d4'],['White','#ffffff'],['Black','#111111']];
+    const $ = (s, root=document) => root.querySelector(s);
+    const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+    const escapeHTML = (v='') => String(v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const makeId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const now = () => new Date().toISOString();
+    const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+    const parseDay = s => { const p=String(s||today()).split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); };
+    const fmtDate = s => { try { return parseDay(s).toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'}); } catch { return ''; } };
+    const shortDate = s => { try { return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(new Date(s)); } catch { return ''; } };
+    const plural = (n,w) => `${n} ${w}${n===1?'':'s'}`;
+    const wordCount = text => (String(text||'').trim().match(/\S+/g)||[]).length;
+    const COVERS_IDS = Object.keys(COVERS);
+
+    let state = {projects:[],activeProjectId:null,activeChapterId:null,filter:'all',query:'',shelf:false,sortNewest:true};
+    let prefs = {theme:'tomato',shelf:false,sortNewest:true,migrated:false};
+    let editingProjectId = null, chosenCover = 'rose', pendingConfirm = null, toastTimer = null, saveTimer = null;
+    let reader = {chapterId:null,pages:[],index:0};
+    let savedSelection = null;
+
+    function sanitize(html) {
+      const doc = new DOMParser().parseFromString(`<body>${html||''}</body>`,'text/html');
+      const allowed = new Set(['B','STRONG','I','EM','U','BR','P','DIV','UL','OL','LI','H2','H3','SPAN','IMG']);
+      const drop = new Set(['SCRIPT','STYLE','IFRAME','OBJECT','EMBED','LINK','META','SVG','FORM','VIDEO','AUDIO']);
+      const walk = node => [...node.childNodes].forEach(n => {
+        if (n.nodeType===3) return;
+        if (n.nodeType!==1) { n.remove(); return; }
+        if (drop.has(n.tagName)) { n.remove(); return; }
+        walk(n);
+        if (!allowed.has(n.tagName)) { n.replaceWith(...n.childNodes); return; }
+        if (n.tagName==='IMG') {
+          const src=n.getAttribute('src')||'';
+          if (!/^data:image\/(jpeg|png|gif|webp);base64,/i.test(src)) { n.remove(); return; }
+          const alt=n.getAttribute('alt')||'';
+          [...n.attributes].forEach(a=>n.removeAttribute(a.name));
+          n.setAttribute('src',src); n.setAttribute('alt',alt.slice(0,160));
+          n.setAttribute('loading','lazy');
+          return;
+        }
+        const style = n.tagName==='SPAN' ? (n.style.color||'') : '';
+        if (style.replace(/\s/g,'')==='rgb(1,2,3)') { n.replaceWith(...n.childNodes); return; }
+        [...n.attributes].forEach(a=>n.removeAttribute(a.name));
+        if (style && (/^#[0-9a-f]{3,8}$/i.test(style) || /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+/i.test(style))) n.setAttribute('style',`color:${style}`);
+      });
+      walk(doc.body);
+      return doc.body.innerHTML;
+    }
+    const textToHTML = text => escapeHTML(text).replace(/\r?\n/g,'<br>');
+    function htmlToText(html) {
+      const spaced=String(html||'').replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/(div|p|li|h2|h3|ul|ol)>/gi,'\n');
+      const doc=new DOMParser().parseFromString(`<body>${spaced}</body>`,'text/html');
+      return (doc.body.textContent||'').replace(/\n{3,}/g,'\n\n').trim();
+    }
+    function normaliseChapter(c={},i=0) {
+      const stamp=c.updatedAt||now();
+      const html=sanitize(typeof c.html==='string'?c.html:textToHTML(String(c.body||'')));
+      return {id:String(c.id||makeId()),title:typeof c.title==='string'?c.title:`Chapter ${i+1}`,html,body:htmlToText(html),date:/^\d{4}-\d{2}-\d{2}$/.test(c.date||'')?c.date:String(c.createdAt||stamp).slice(0,10)||today(),favourite:Boolean(c.favourite),createdAt:c.createdAt||stamp,updatedAt:stamp};
+    }
+    function normaliseProject(p={}) {
+      return {id:String(p.id||makeId()),title:String(p.title||'Untitled book'),description:String(p.description||''),cover:COVERS_IDS.includes(p.cover)?p.cover:'rose',favourite:Boolean(p.favourite),createdAt:p.createdAt||now(),updatedAt:p.updatedAt||now(),chapters:Array.isArray(p.chapters)?p.chapters.map(normaliseChapter):[]};
+    }
+    const activeProject = () => state.projects.find(p=>p.id===state.activeProjectId)||null;
+    const activeChapter = () => activeProject()?.chapters.find(c=>c.id===state.activeChapterId)||null;
+    const projectWords = p => p.chapters.reduce((n,c)=>n+wordCount(c.body),0);
+    function toast(message) {
+      const el=$('#toast'); el.textContent=message; el.classList.add('show');
+      clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2400);
+    }
+    function setSaveStatus(message='Saved on this device') { const el=$('#saveStatus'); if(el) el.textContent=message; }
+    function persist(show=true) {
+      try {
+        localStorage.setItem(STORAGE_KEY,JSON.stringify({projects:state.projects}));
+        if(show) setSaveStatus('Saved on this device');
+        return true;
+      } catch(err) {
+        console.error('Diary save failed:',err); setSaveStatus('Could not save'); toast('Your device storage is full. Export a backup or remove a photo.'); return false;
+      }
+    }
+    function savePrefs() { try { localStorage.setItem(PREF_KEY,JSON.stringify(prefs)); } catch(e) { console.warn(e); } }
+    function applyTheme(id) {
+      const theme=THEMES.find(t=>t.id===id)||THEMES[0]; prefs.theme=theme.id;
+      document.documentElement.dataset.theme=theme.id;
+      const meta=$('meta[name="theme-color"]');
+      if(meta) meta.content=theme.colors[0];
+      savePrefs(); renderThemeChoices();
+    }
+    function fromStorypad(data) {
+      const books=data&&data.books&&typeof data.books==='object'?Object.values(data.books):[];
+      const entries=data&&data.entries&&typeof data.entries==='object'?Object.values(data.entries):[];
+      const legacyCover={'#2f4a8a':'indigo','#4a6b45':'moss','#6b3f68':'plum','#9a4a2f':'rust','#2a6b73':'teal','#3b4252':'indigo','#9b2f45':'crimson','#1f6f8b':'sky','#a8741a':'butter'};
+      return books.map(b=>{
+        const chapters=entries.filter(e=>e.bookId===b.id).sort((a,z)=>String(a.date||'').localeCompare(String(z.date||''))).map(e=>({id:e.id,title:e.title||'',html:e.html||'',date:e.date,createdAt:new Date(e.createdAt||Date.now()).toISOString(),updatedAt:new Date(e.updatedAt||Date.now()).toISOString()}));
+        return normaliseProject({id:b.id,title:b.title,cover:legacyCover[String(b.color||'').toLowerCase()]||'indigo',createdAt:new Date(b.createdAt||Date.now()).toISOString(),updatedAt:new Date(b.updatedAt||Date.now()).toISOString(),chapters});
+      });
+    }
+    function load() {
+      try { const raw=JSON.parse(localStorage.getItem(PREF_KEY)||'null'); if(raw&&typeof raw==='object') prefs={...prefs,...raw}; } catch(e) { console.warn(e); }
+      try { const raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'); if(raw&&Array.isArray(raw.projects)) state.projects=raw.projects.map(normaliseProject); } catch(e) { console.warn(e); toast('I could not read the saved diary data.'); }
+      if(!prefs.migrated) {
+        try {
+          const old=JSON.parse(localStorage.getItem(LEGACY_KEY)||'null');
+          const imported=old?fromStorypad(old):[];
+          const known=new Set(state.projects.map(p=>p.id));
+          imported.forEach(p=>{if(!known.has(p.id))state.projects.push(p);});
+          if(imported.length) { persist(false); setTimeout(()=>toast('Your Storypad books were brought into the library ✿'),500); }
+        } catch(e) { console.warn('Storypad migration skipped:',e); }
+        prefs.migrated=true; savePrefs();
+      }
+      state.shelf=Boolean(prefs.shelf); state.sortNewest=prefs.sortNewest!==false;
+      applyTheme(prefs.theme||'tomato');
+    }
+
+    function matchingProjects() {
+      const q=state.query.trim().toLowerCase();
+      return state.projects.filter(p=>(state.filter!=='favorites'||p.favourite)&&(!q||p.title.toLowerCase().includes(q)||p.description.toLowerCase().includes(q)||p.chapters.some(c=>c.title.toLowerCase().includes(q)||c.body.toLowerCase().includes(q))));
+    }
+    function renderLibrary() {
+      const books=matchingProjects().sort((a,b)=>state.sortNewest?new Date(b.updatedAt)-new Date(a.updatedAt):a.title.localeCompare(b.title));
+      $('#allCount').textContent=state.projects.length;
+      $('#favoriteCount').textContent=state.projects.filter(p=>p.favourite).length;
+      $('#libraryCount').textContent=`${books.length} ${books.length===1?'BOOK':'BOOKS'}`;
+      $('#sortButton').textContent=state.sortNewest?'Recent ↕':'A–Z ↕';
+      $('#viewButton').textContent=state.shelf?'☰':'▦';
+      const list=$('#bookList');
+      list.classList.toggle('shelf-view',state.shelf);
+      if(!books.length) {
+        list.innerHTML=`<div style="padding:14px 9px;color:var(--muted);font-size:13px">${state.query?'Nothing found. Try another word.':state.filter==='favorites'?'No favourite books yet.':'Your library is waiting for a book.'}</div>`;
+      } else {
+        list.innerHTML=books.map(p=>{
+          const [symbol,color,pastel]=COVERS[p.cover];
+          return `<button class="book-row ${p.id===state.activeProjectId?'active':''}" type="button" data-action="select-book" data-id="${escapeHTML(p.id)}"><span class="book-thumb" style="--cover:${color};--cover-ink:${pastel?'#574c43':'#fff'}">${symbol}</span><span class="book-row-copy"><span class="book-row-title">${escapeHTML(p.title)}</span><span class="book-row-sub">${plural(p.chapters.length,'chapter')} · ${shortDate(p.updatedAt)}</span></span>${p.favourite?'<span class="book-row-heart">♥</span>':''}</button>`;
+        }).join('');
+      }
+      const total=state.projects.reduce((n,p)=>n+projectWords(p),0);
+      $('#wordTotal').textContent=`${total.toLocaleString()} words`;
+      $$('.filter-button').forEach(b=>b.classList.toggle('active',b.dataset.filter===state.filter));
+    }
+    function renderWorkspace() {
+      const p=activeProject(); const welcome=$('#welcomeScreen'), workspace=$('#workspace');
+      if(!p) { welcome.classList.remove('hidden'); workspace.classList.add('hidden'); $('#bookPanel').innerHTML=''; $('#editorPanel').innerHTML=''; return; }
+      welcome.classList.add('hidden'); workspace.classList.remove('hidden');
+      const [symbol,color,pastel]=COVERS[p.cover];
+      $('#bookPanel').innerHTML=`<button class="back-link" type="button" data-action="back-library">← My library</button>
+        <div class="large-cover" style="--cover:${color};--cover-ink:${pastel?'#574c43':'#fff'}"><span class="cover-symbol">${symbol}</span><h2>${escapeHTML(p.title)}</h2></div>
+        ${p.description?`<p class="book-description">${escapeHTML(p.description)}</p>`:''}
+        <div class="book-actions"><button class="quiet-button" type="button" data-action="edit-book">Edit book</button><button class="quiet-button" type="button" data-action="favorite-book">${p.favourite?'♥ Saved':'♡ Favourite'}</button><button class="quiet-button" type="button" data-action="delete-book">Delete</button></div>
+        <div class="chapter-heading"><h3>CHAPTERS · ${p.chapters.length}</h3><button class="chapter-add" type="button" data-action="add-chapter" aria-label="Add chapter">＋</button></div>
+        <div class="chapter-list">${p.chapters.length?p.chapters.map((c,i)=>`<button class="chapter-row ${c.id===state.activeChapterId?'active':''}" type="button" data-action="select-chapter" data-id="${escapeHTML(c.id)}"><span class="chapter-num">${String(i+1).padStart(2,'0')}</span><span class="chapter-name">${escapeHTML(c.title.trim()||'Untitled chapter')}</span><span class="chapter-count">${wordCount(c.body)}w</span>${c.favourite?'<span class="chapter-row-fav">♥</span>':''}</button>`).join(''):'<div class="chapter-empty">Your first chapter is just a little ＋ away.<br>Start whenever you are ready.</div>'}</div>`;
+      const c=activeChapter();
+      if(!c) {
+        $('#workspace').classList.remove('mobile-writing');
+        $('#editorPanel').innerHTML=`<div class="empty-editor"><div><strong>A little chapter, perhaps?</strong><span>Choose a chapter from your book or add a new one to begin writing.</span><p><button class="primary-button" type="button" data-action="add-chapter">＋ Add a chapter</button></p><p><button class="quiet-button" type="button" data-action="open-book-flip">📖 Read this book</button></p></div></div>`;
+        return;
+      }
+      $('#workspace').classList.add('mobile-writing');
+      const tools=`<button class="format-button" type="button" data-command="bold" title="Bold"><b>B</b></button><button class="format-button" type="button" data-command="italic" title="Italic"><i>I</i></button><button class="format-button" type="button" data-command="underline" title="Underline"><u>U</u></button><button class="format-button" type="button" data-command="formatBlock" data-value="H2" title="Heading">H</button><button class="format-button" type="button" data-command="insertUnorderedList" title="Bulleted list">☷</button><button class="format-button" type="button" data-command="insertOrderedList" title="Numbered list">1.</button><span class="tool-sep"></span><button class="format-button" type="button" data-command="photo" title="Add a photo">▧</button><button class="format-button" type="button" data-command="undo" title="Undo">↶</button><span class="tool-sep"></span><button class="ink-dot ink-auto active" type="button" data-ink="auto" title="Theme ink"></button>${INKS.map(([name,val])=>`<button class="ink-dot" type="button" data-ink="${val}" style="background:${val}" title="${name} ink"></button>`).join('')}<input class="custom-ink" type="color" id="customInk" value="#1d4ed8" title="Custom ink" aria-label="Custom ink colour">`;
+      $('#editorPanel').innerHTML=`<div class="editor-top"><button class="back-link mobile-editor-back" type="button" data-action="back-chapters">← Chapters</button><div class="editor-crumb">${escapeHTML(p.title)} <span>/</span> ${escapeHTML(c.title.trim()||'Untitled chapter')}</div><div class="editor-actions"><button class="icon-button" type="button" data-action="open-chapter-flip" title="Read as a flipbook">📖</button><button class="icon-button" type="button" data-action="favorite-chapter" title="Favourite chapter">${c.favourite?'♥':'♡'}</button><button class="icon-button" type="button" data-action="rename-chapter" title="Rename chapter">···</button></div></div>
+        <div class="format-bar" role="toolbar" aria-label="Writing tools">${tools}</div>
+        <div class="paper-wrap"><div class="paper"><div class="paper-kicker">A PAGE FROM YOUR STORY</div><input class="chapter-title-input" id="chapterTitle" data-field="title" maxlength="90" value="${escapeHTML(c.title)}" placeholder="Give this chapter a title…" aria-label="Chapter title"><hr class="paper-rule"><div class="chapter-meta"><input class="chapter-date" id="chapterDate" data-field="date" type="date" value="${escapeHTML(c.date)}" aria-label="Chapter date"></div><div class="rich-body" id="chapterBody" data-field="body" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true" data-placeholder="Let your thoughts find their way onto the page…">${c.html}</div><div class="editor-footer"><span id="wordCount">${plural(wordCount(c.body),'word')}</span><span class="page-status" id="chapterSaveStatus">Saved on this device</span></div></div></div>`;
+      updateSaveStatus();
+    }
+    function updateSaveStatus() {
+      const c=activeChapter(); if(!c) return;
+      const count=$('#wordCount'); if(count) count.textContent=plural(wordCount(c.body),'word');
+    }
+    function renderAll() { renderLibrary(); renderWorkspace(); }
+
+    function scheduleSave() {
+      setSaveStatus('Saving…'); const pageStatus=$('#chapterSaveStatus'); if(pageStatus)pageStatus.textContent='Saving…';
+      clearTimeout(saveTimer); saveTimer=setTimeout(()=>{
+        const c=activeChapter(); const body=$('#chapterBody');
+        if(c&&body) { c.html=sanitize(body.innerHTML); c.body=htmlToText(c.html); c.updatedAt=now(); const p=activeProject(); if(p)p.updatedAt=c.updatedAt; persist(); updateSaveStatus(); const ps=$('#chapterSaveStatus'); if(ps)ps.textContent='Saved on this device'; renderLibrary(); }
+      },420);
+    }
+    function flushSave() { clearTimeout(saveTimer); const c=activeChapter(); const body=$('#chapterBody'); if(c&&body){c.html=sanitize(body.innerHTML);c.body=htmlToText(c.html);c.updatedAt=now();const p=activeProject();if(p)p.updatedAt=c.updatedAt;persist();} }
+
+    function openProjectDialog(project=null) {
+      editingProjectId=project?.id||null; chosenCover=project?.cover||'rose';
+      $('#projectDialogTitle').textContent=project?'Edit your book':'A new book';
+      $('#projectTitle').value=project?.title||''; $('#projectDescription').value=project?.description||'';
+      renderCoverChoices(); $('#projectDialog').showModal(); setTimeout(()=>$('#projectTitle').focus(),50);
+    }
+    function renderCoverChoices() {
+      $('#coverGrid').innerHTML=COVERS_IDS.map(id=>{const [symbol,color]=COVERS[id];return `<button class="cover-choice ${chosenCover===id?'chosen':''}" type="button" data-cover="${id}" style="background:${color}" aria-label="${id} cover" aria-pressed="${chosenCover===id}">${symbol}</button>`;}).join('');
+    }
+    function saveProjectForm(event) {
+      event.preventDefault(); const title=$('#projectTitle').value.trim(); if(!title){$('#projectTitle').focus();return;}
+      const desc=$('#projectDescription').value.trim(); let p;
+      if(editingProjectId) { p=state.projects.find(x=>x.id===editingProjectId); if(!p)return; p.title=title;p.description=desc;p.cover=chosenCover;p.updatedAt=now(); }
+      else { p=normaliseProject({id:makeId(),title,description:desc,cover:chosenCover,chapters:[]}); state.projects.unshift(p); state.activeProjectId=p.id; state.activeChapterId=null; }
+      persist(); $('#projectDialog').close(); renderAll(); toast(editingProjectId?'Book details updated ✿':'Your new book is ready ✿');
+    }
+    function addChapter() {
+      const p=activeProject(); if(!p)return;
+      flushSave(); const c=normaliseChapter({id:makeId(),title:'',date:today(),html:''},p.chapters.length);
+      p.chapters.push(c); p.updatedAt=now(); state.activeChapterId=c.id; persist(); renderAll();
+      setTimeout(()=>$('#chapterTitle')?.focus(),50);
+    }
+    function askConfirm(title,message,action) {
+      $('#confirmTitle').textContent=title; $('#confirmMessage').textContent=message; pendingConfirm=action; $('#confirmDialog').showModal();
+    }
+    function deleteBook() {
+      const p=activeProject(); if(!p)return;
+      askConfirm('Delete this book?',`“${p.title}” and all of its chapters will be removed from this device. Export a backup first if you might need it.`,()=>{
+        state.projects=state.projects.filter(x=>x.id!==p.id);state.activeProjectId=null;state.activeChapterId=null;persist();renderAll();toast('Book deleted.');
+      });
+    }
+    function deleteChapter() {
+      const p=activeProject(),c=activeChapter(); if(!p||!c)return;
+      askConfirm('Delete this chapter?',`“${c.title||'Untitled chapter'}” will be removed from this book.`,()=>{
+        p.chapters=p.chapters.filter(x=>x.id!==c.id);p.updatedAt=now();state.activeChapterId=null;persist();renderAll();toast('Chapter deleted.');
+      });
+    }
+    function renameChapter() {
+      const c=activeChapter();if(!c)return;
+      const next=window.prompt('Give this chapter a name:',c.title||'');
+      if(next===null)return; c.title=next.trim();c.updatedAt=now();const p=activeProject();if(p)p.updatedAt=c.updatedAt;persist();renderAll();
+    }
+    function renderThemeChoices() {
+      const grid=$('#themeGrid'); if(!grid)return;
+      grid.innerHTML=THEMES.map(t=>`<button class="theme-choice ${prefs.theme===t.id?'chosen':''}" type="button" data-theme="${t.id}"><span class="theme-swatches">${t.colors.map(c=>`<i style="background:${c}"></i>`).join('')}</span><span>${t.name}</span></button>`).join('');
+    }
+    function exportBackup() {
+      flushSave(); const payload={app:'Baby Tomato\'s Diary',version:1,exportedAt:now(),projects:state.projects};
+      const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`baby-tomatos-diary-backup-${today()}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('Backup downloaded. Keep it somewhere safe ✿');
+    }
+    function importBackup(file) {
+      if(!file)return;const readerFile=new FileReader();
+      readerFile.onload=()=>{
+        try {
+          const data=JSON.parse(String(readerFile.result||''));const list=Array.isArray(data)?data:data.projects;
+          if(!Array.isArray(list))throw new Error('This file does not contain a diary backup.');
+          const imported=list.map(normaliseProject);const ids=new Set(state.projects.map(p=>p.id));
+          imported.forEach(p=>{if(ids.has(p.id))p.id=makeId();state.projects.push(p);});
+          persist();renderAll();toast(`${imported.length} ${imported.length===1?'book':'books'} imported.`);
+        } catch(err) { toast(err.message||'That backup could not be imported.'); }
+        $('#backupInput').value='';
+      };
+      readerFile.onerror=()=>toast('I could not read that backup file.');readerFile.readAsText(file);
+    }
+    function insertPhoto(file) {
+      if(!file||!file.type.startsWith('image/'))return;
+      if(file.size>12*1024*1024){toast('That image is too large. Please choose one under 12 MB.');return;}
+      const img=new Image();const url=URL.createObjectURL(file);
+      img.onload=()=>{
+        const max=1400,scale=Math.min(1,max/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);
+        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        let data;try{data=canvas.toDataURL('image/jpeg',.78);}catch(e){URL.revokeObjectURL(url);toast('This image could not be added.');return;}
+        URL.revokeObjectURL(url);const body=$('#chapterBody');if(!body){toast('Open a chapter first.');return;}body.focus();
+        const sel=window.getSelection();let range=savedSelection;
+        if(!range||!body.contains(range.commonAncestorContainer)){range=document.createRange();range.selectNodeContents(body);range.collapse(false);}
+        const image=document.createElement('img');image.src=data;image.alt=file.name||'Diary photo';range.insertNode(image);range.setStartAfter(image);range.collapse(true);sel.removeAllRanges();sel.addRange(range);scheduleSave();
+      };
+      img.onerror=()=>{URL.revokeObjectURL(url);toast('That image could not be opened.');};img.src=url;
+    }
+    function applyInk(color) {
+      const body=$('#chapterBody');if(!body)return;body.focus();
+      const sel=window.getSelection();if(savedSelection){try{sel.removeAllRanges();sel.addRange(savedSelection);}catch(e){}}
+      if(color==='auto'){document.execCommand('foreColor',false,'rgb(1,2,3)');}else{document.execCommand('foreColor',false,color);}
+      scheduleSave();
+    }
+    function runCommand(command,value=null) {
+      const body=$('#chapterBody');if(!body)return;body.focus();
+      if(command==='photo') { savedSelection=window.getSelection()?.rangeCount?window.getSelection().getRangeAt(0).cloneRange():null;$('#photoInput').click();return; }
+      if(command==='formatBlock') document.execCommand('formatBlock',false,value||'H2');
+      else document.execCommand(command,false,value);
+      scheduleSave();
+    }
+
+    function buildReaderPages(chapter, project) {
+      const cover=`<div class="reader-cover"><div class="tomato">🍅</div><h2>${escapeHTML(chapter.title.trim()||'Untitled chapter')}</h2><p>${escapeHTML(project.title)}<br>${escapeHTML(fmtDate(chapter.date))}</p></div>`;
+      const doc=new DOMParser().parseFromString(`<body>${sanitize(chapter.html||'')}</body>`,'text/html');
+      const nodes=[...doc.body.childNodes].filter(n=>n.nodeType===1||String(n.textContent||'').trim());
+      const chunks=[];let current='',count=0;const limit=145;
+      const push=()=>{if(current.trim()){chunks.push(current);current='';count=0;}};
+      nodes.forEach(node=>{
+        const words=(node.textContent||'').trim().split(/\s+/).filter(Boolean);
+        if(words.length>limit) {
+          push();
+          for(let i=0;i<words.length;i+=limit) { const part=words.slice(i,i+limit).join(' '); chunks.push(`<p>${textToHTML(part)}</p>`); }
+          return;
+        }
+        if(count+words.length>limit)push();
+        current+=node.outerHTML||textToHTML(node.textContent||'');count+=words.length;
+      });
+      push();
+      const content=chunks.length?chunks:['<p style="color:#a59d8d">This chapter is waiting for its first words…</p>'];
+      return [cover,...content.map((html,i)=>`<div>${html}</div>` )];
+    }
+    function openReader(chapter=null) {
+      flushSave();const p=activeProject();if(!p)return;
+      if(chapter) {
+        reader={chapterId:chapter.id,pages:buildReaderPages(chapter,p),index:0};
+      } else {
+        if(!p.chapters.length){toast('Add a chapter before opening the flipbook.');return;}
+        const cover=`<div class="reader-cover"><div class="tomato">🍅</div><h2>${escapeHTML(p.title)}</h2><p>Baby Tomato's Diary<br>${plural(p.chapters.length,'chapter')}</p></div>`;
+        const pages=[cover];
+        p.chapters.forEach(ch=>pages.push(...buildReaderPages(ch,p)));
+        reader={chapterId:null,pages,index:0};
+      }
+      $('#flipTitle').textContent=p.title;paintReader(false);$('#flipDialog').showModal();
+    }
+    function readerIsMobile() { return window.matchMedia('(max-width: 760px)').matches; }
+    function paintReader(animate=true) {
+      const pages=reader.pages;const mobile=readerIsMobile();const left=$('#readerLeft'),right=$('#readerRight');
+      const index=reader.index;
+      left.innerHTML=pages[index]||'<div class="reader-page-number">·</div>';
+      right.innerHTML=pages[index+1]||'';
+      left.className='reader-page left';right.className='reader-page right';
+      if(index===0) left.innerHTML=pages[0];
+      if(mobile) { right.innerHTML=pages[index]||''; left.innerHTML=''; right.classList.add('mobile-current'); }
+      [left,right].forEach((el,i)=>{
+        const actual=mobile?index:index+i;
+        if(el.innerHTML && !el.querySelector('.reader-page-number')) { const n=document.createElement('div');n.className='reader-page-number';n.textContent=String(actual+1);el.appendChild(n); }
+      });
+      const shown=mobile?1:Math.min(2,pages.length-index);
+      $('#readerCounter').textContent=`Pages ${index+1}–${index+shown} of ${pages.length}`;
+      $('#readerPrev').disabled=index<=0;$('#readerNext').disabled=index+(mobile?1:2)>=pages.length;
+      if(animate){const spread=$('#bookSpread');spread.classList.remove('turning');void spread.offsetWidth;spread.classList.add('turning');}
+    }
+    function moveReader(direction) {
+      const step=readerIsMobile()?1:2;const next=Math.max(0,Math.min(reader.pages.length-1,reader.index+direction*step));if(next===reader.index)return;reader.index=next;paintReader(true);
+    }
+
+    // Delegated interactions
+    document.addEventListener('click',event=>{
+      const target=event.target.closest('[data-action],[data-filter],[data-command],[data-ink],[data-cover],[data-theme],[data-close]');if(!target)return;
+      if(target.dataset.close){$( `#${target.dataset.close}` )?.close();return;}
+      if(target.dataset.filter){state.filter=target.dataset.filter;renderLibrary();return;}
+      if(target.dataset.cover){chosenCover=target.dataset.cover;renderCoverChoices();return;}
+      if(target.dataset.theme){applyTheme(target.dataset.theme);return;}
+      if(target.dataset.ink){applyInk(target.dataset.ink==='auto'?'auto':target.dataset.ink);$$('.ink-dot').forEach(b=>b.classList.toggle('active',b===target));return;}
+      if(target.dataset.command){runCommand(target.dataset.command,target.dataset.value||null);return;}
+      const action=target.dataset.action;
+      switch(action) {
+        case 'select-book': flushSave();state.activeProjectId=target.dataset.id;state.activeChapterId=null;renderAll();break;
+        case 'back-library': flushSave();state.activeProjectId=null;state.activeChapterId=null;renderAll();break;
+        case 'back-chapters': $('#workspace').classList.remove('mobile-writing');break;
+        case 'select-chapter': flushSave();state.activeChapterId=target.dataset.id;renderWorkspace();break;
+        case 'add-chapter': addChapter();break;
+        case 'edit-book': openProjectDialog(activeProject());break;
+        case 'favorite-book': {const p=activeProject();if(p){p.favourite=!p.favourite;p.updatedAt=now();persist();renderAll();}break;}
+        case 'delete-book': deleteBook();break;
+        case 'favorite-chapter': {const c=activeChapter();if(c){c.favourite=!c.favourite;c.updatedAt=now();persist();renderWorkspace();}break;}
+        case 'rename-chapter': renameChapter();break;
+        case 'delete-chapter': deleteChapter();break;
+        case 'open-chapter-flip': openReader(activeChapter());break;
+        case 'open-book-flip': openReader();break;
+      }
+    });
+    $('#projectForm').addEventListener('submit',saveProjectForm);
+    $('#newBookButton').addEventListener('click',()=>openProjectDialog());
+    $('#welcomeNewBook').addEventListener('click',()=>openProjectDialog());
+    $('#searchInput').addEventListener('input',e=>{state.query=e.target.value;renderLibrary();});
+    $('#sortButton').addEventListener('click',()=>{state.sortNewest=!state.sortNewest;prefs.sortNewest=state.sortNewest;savePrefs();renderLibrary();});
+    $('#viewButton').addEventListener('click',()=>{state.shelf=!state.shelf;prefs.shelf=state.shelf;savePrefs();toast(state.shelf?'Bookshelf view selected.':'List view selected.');});
+    $('#themeButton').addEventListener('click',()=>{renderThemeChoices();$('#themeDialog').showModal();});
+    $('#exportButton').addEventListener('click',exportBackup);
+    $('#importButton').addEventListener('click',()=>$('#backupInput').click());
+    $('#backupInput').addEventListener('change',e=>importBackup(e.target.files?.[0]));
+    $('#photoInput').addEventListener('change',e=>{insertPhoto(e.target.files?.[0]);e.target.value='';});
+    $('#customInk').addEventListener('input',e=>applyInk(e.target.value));
+    $('#confirmYes').addEventListener('click',()=>{const action=pendingConfirm;pendingConfirm=null;$('#confirmDialog').close();if(action)action();});
+    $('#readerPrev').addEventListener('click',()=>moveReader(-1));
+    $('#readerNext').addEventListener('click',()=>moveReader(1));
+    $('#flipDialog').addEventListener('click',e=>{if(e.target.id==='flipDialog')$('#flipDialog').close();});
+    $('#chapterTitle')?.addEventListener('input',()=>{});
+    document.addEventListener('input',e=>{
+      if(e.target.id==='chapterTitle') {const c=activeChapter();if(c){c.title=e.target.value;c.updatedAt=now();const crumb=$('.editor-crumb');if(crumb)crumb.innerHTML=`${escapeHTML(activeProject()?.title||'')} <span>/</span> ${escapeHTML(c.title||'Untitled chapter')}`;scheduleSave();}}
+      if(e.target.id==='chapterDate') {const c=activeChapter();if(c){c.date=e.target.value||today();scheduleSave();}}
+      if(e.target.id==='chapterBody') {const c=activeChapter();if(c){c.html=sanitize(e.target.innerHTML);c.body=htmlToText(c.html);scheduleSave();updateSaveStatus();}}
+    });
+    document.addEventListener('keyup',e=>{if(e.target.id==='chapterBody')updateSaveStatus();});
+    document.addEventListener('mouseup',()=>{const body=$('#chapterBody');const sel=window.getSelection();if(body&&sel?.rangeCount&&body.contains(sel.anchorNode))savedSelection=sel.getRangeAt(0).cloneRange();});
+    document.addEventListener('keydown',e=>{
+      if($('#flipDialog').open) {
+        if(e.key==='ArrowRight'){e.preventDefault();moveReader(1);} else if(e.key==='ArrowLeft'){e.preventDefault();moveReader(-1);} else if(e.key==='Escape')$('#flipDialog').close();
+      }
+    });
+    let touchStartX=0;
+    $('#bookSpread').addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].clientX;},{passive:true});
+    $('#bookSpread').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchStartX;if(Math.abs(dx)>55)moveReader(dx<0?1:-1);},{passive:true});
+    window.addEventListener('beforeunload',flushSave);
+    window.addEventListener('resize',()=>{if($('#flipDialog').open)paintReader(false);});
+
+    // Installable PWA. A normal browser can still use the diary without installation.
+    let installPrompt=null;
+    window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;$('#installButton').classList.remove('hidden');});
+    $('#installButton').addEventListener('click',async()=>{
+      if(!installPrompt){toast('Use your browser menu and choose “Install app” or “Add to Home screen”.');return;}
+      installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$('#installButton').classList.add('hidden');
+    });
+    if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Offline support could not be registered:',err)));
+    }
+
+    load();renderThemeChoices();renderAll();
+  })();
+  </script>
+</body>
+</html>
